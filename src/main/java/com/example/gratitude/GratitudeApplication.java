@@ -1,13 +1,13 @@
-package com.example.task;
+package com.example.gratitude;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class TaskApplication {
+public class GratitudeApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(TaskApplication.class, args);
+		SpringApplication.run(GratitudeApplication.class, args);
 	}
 
 }
