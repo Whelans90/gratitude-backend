@@ -55,6 +55,7 @@ public class AuthController {
 		SecurityContextHolder.getContext().setAuthentication(authentication);
 		
 		Jwt token = jwtService.createJWT(username);
+		boolean valid = jwtService.validateJWT(token);
 
 		return new ResponseEntity<Jwt>(token, HttpStatus.OK);
 	}
