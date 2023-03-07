@@ -7,6 +7,7 @@ import com.example.gratitude.model.User;
 import com.example.gratitude.repository.UserRepository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class UserService {
@@ -36,5 +37,11 @@ public class UserService {
 		user.setEmail(userDetails.getEmail());
 
 		return userRepository.save(user);
+	}
+	
+	public User getUserByUsername (String username) {
+		User user = userRepository.findByEmail(username).get();
+		
+		return user;
 	}
 }

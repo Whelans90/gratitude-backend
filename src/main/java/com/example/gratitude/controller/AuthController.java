@@ -1,5 +1,7 @@
 package com.example.gratitude.controller;
 
+import java.util.Collections;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -8,6 +10,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -15,14 +18,15 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.gratitude.dto.LoginDto;
 import com.example.gratitude.dto.SignUpDto;
+import com.example.gratitude.model.Jwt;
 import com.example.gratitude.model.Role;
 import com.example.gratitude.model.User;
 import com.example.gratitude.repository.RoleRepository;
 import com.example.gratitude.repository.UserRepository;
-
-import java.util.Collections;
+import com.example.gratitude.service.JwtService;
 
 @RestController
+@CrossOrigin(origins = "http://localhost:5173")
 @RequestMapping("/api/auth")
 public class AuthController {
 
@@ -34,25 +38,35 @@ public class AuthController {
 
     @Autowired
     private RoleRepository roleRepository;
+    
+    @Autowired
+    private JwtService jwtService;
 
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-    @PostMapping("/signin")
-    public ResponseEntity<String> authenticateUser(@RequestBody LoginDto loginDto){
-        Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
-                loginDto.getUsernameOrEmail(), loginDto.getPassword()));
+	
+	@PostMapping("/signin")
+	public ResponseEntity<Jwt> authenticateUser2(@RequestBody LoginDto loginDto) {
+		String username = loginDto.getUsernameOrEmail();
+		Authentication authentication = authenticationManager
+				.authenticate(new UsernamePasswordAuthenticationToken(username, loginDto.getPassword()));
 
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-        return new ResponseEntity<>("User signed-in successfully!.", HttpStatus.OK);
-    }
+		SecurityContextHolder.getContext().setAuthentication(authentication);
+		
+		Jwt token = jwtService.createJWT(username);
+		boolean valid = jwtService.validateJWT(token);
+
+		return new ResponseEntity<Jwt>(token, HttpStatus.OK);
+	}
+    
 
     @PostMapping("/signup")
     public ResponseEntity<?> registerUser(@RequestBody SignUpDto signUpDto){
 
         // add check for username exists in a DB
         if(userRepository.existsByUsername(signUpDto.getUsername())){
-            return new ResponseEntity<>("Username is already taken!", HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>("User Already Exist!", HttpStatus.BAD_REQUEST);
         }
 
         // add check for email exists in DB
